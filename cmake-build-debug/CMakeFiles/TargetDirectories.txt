@@ -1,0 +1,3 @@
+/media/cyq7on/0EFF10060EFF1006/demo/Other/WordCount/cmake-build-debug/CMakeFiles/edit_cache.dir
+/media/cyq7on/0EFF10060EFF1006/demo/Other/WordCount/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/media/cyq7on/0EFF10060EFF1006/demo/Other/WordCount/cmake-build-debug/CMakeFiles/WordCount.dir
