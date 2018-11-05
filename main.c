@@ -18,23 +18,21 @@
 #define File_Max 50
 #define Thread_Count 2
 
-typedef struct word{
+typedef struct {
     char w[Word_Max];
     int count;
-}word;
-word a[1000];
+}Word;
+Word a[1000];
+
 
 //已经在读或者读完的文件
-char *haveReadFiles[File_Max];
+char haveReadFile[File_Max][128];
+int fileCount = 0;
 
 pthread_mutex_t mutex ;
 
+
 int flag = 0,k = 0;
-void *thread(void *arg) {
-
-}
-
-
 
 int getWordCount(const char* file_path) {
     FILE *fp;
@@ -87,17 +85,32 @@ int getWordCount(const char* file_path) {
 
 //检测文件是否未读，name是带有上级目录的文件名
 int checkFile(const char* name){
+//    printf("now file is %s , while haveReadFile total %d: " ,name ,fileCount);
+//    for (int i = 0; i < fileCount; i++) {
+//        printf("%s\t",haveReadFile[i]);
+//    }
+//    printf("\n");
     int canRead = 1;
     pthread_mutex_lock(&mutex); // 给互斥体变量加锁
 
-    for(int i = 0;haveReadFiles[i];i ++){
-        if (strcmp(name,haveReadFiles[i])) {
+    for(int i = 0;i < fileCount;i ++){
+        if (!strcmp(name,haveReadFile[i])) {
             canRead = 0;
+            break;
         }
     }
 
     pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
+    printf("checkFile is %d\n",canRead);
     return canRead;
+}
+
+void setFile(char* name){
+    pthread_mutex_lock(&mutex); // 给互斥体变量加锁
+
+    strcpy(haveReadFile[fileCount++],name);
+
+    pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
 }
 
 void scanDir(char *dir, int depth) {// 定义目录扫描函数
@@ -122,8 +135,11 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
             char name[128];
             sprintf(name,"%s/%s",dir,entry->d_name);
             if (checkFile(name)){
+                setFile(name);
                 getWordCount(entry->d_name);
                 printf("%s统计完毕\n",name);
+            } else{
+                chdir("..");
             }
         }
 
@@ -132,6 +148,10 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
     closedir(dp);                                                 // 关闭子目录流
 }
 
+void *thread(void *arg) {
+//    int flag = 0,k = 0;
+    scanDir("../prog",0);
+}
 
 int main(int argc, char *argv[]){
     /*printf("%s\n",argv[1]);
@@ -140,16 +160,29 @@ int main(int argc, char *argv[]){
         printf("no directory input\n");
         return -1;
     }*/
-    pthread_mutex_init(&mutex, NULL); //按缺省的属性初始化互斥体变量mutex
-//    pthread_t pthread[Thread_Count] = {0,1};
-//    for (int i = 0; i < Thread_Count; i++) {
-//        if (pthread_create(&pthread[i], NULL, thread, NULL)) {
-//            printf("pthread%d create success\n",i);
-//        } else{
-//            printf("pthread%d create fail\n",i);
-//        }
-//    }
 
-    scanDir("../prog",0);
+    char * st = "test";
+    char* str[]={"abcdd","FOO","911"};
+//    str[0]=st;
+//strcpy(str[0],st);
+    for (int j = 0; j < 3; ++j) {
+        printf("%s\n",str[j]);
+    }
+    pthread_mutex_init(&mutex, NULL); //按缺省的属性初始化互斥体变量mutex
+    pthread_t pthread[Thread_Count] = {0,1};
+    for (int i = 0; i < Thread_Count - 1; i++) {
+        if (pthread_create(&pthread[i], NULL, thread, NULL)) {
+            printf("pthread%d create fail\n",i);
+        } else{
+            printf("pthread%d create success\n",i);
+        }
+    }
+
+    for (int i = 0;i < Thread_Count; i++) {
+        pthread_join(pthread[i],NULL);
+    }
+
+
+//    scanDir("../prog",0);
 //    return 0;
 }

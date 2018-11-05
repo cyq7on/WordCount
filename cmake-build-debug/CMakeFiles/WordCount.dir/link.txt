@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/WordCount.dir/main.c.o  -o WordCount 
+/usr/bin/cc -g   CMakeFiles/WordCount.dir/main.c.o  -o WordCount -lpthread 
