@@ -132,10 +132,8 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
     DIR *dp;                      // 定义子目录流指针
     struct dirent *entry;         // 定义dirent结构指针保存后续目录
     struct stat statbuf;          // 定义statbuf结构保存文件属性
-    my_lock(); // 给互斥体变量解除锁
-    dp = opendir(dir);
-    pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
-    if(dp == NULL) {// 打开目录，获取子目录流指针，判断操作是否成功
+
+    if((dp = opendir(dir)) == NULL) {// 打开目录，获取子目录流指针，判断操作是否成功
         puts("can't open dir");
         puts(dir);
         printf("Current Thread is %lu\n",pthread_self());
