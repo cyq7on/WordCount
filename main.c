@@ -16,7 +16,7 @@
 
 #define Word_Max 100
 #define File_Max 50
-#define Thread_Count 1
+#define Thread_Count 2
 
 typedef struct {
     char w[Word_Max];
@@ -36,7 +36,7 @@ int flag = 0,k = 0;
 
 void my_lock(){
     if (pthread_mutex_lock(&mutex) != 0){
-        printf("lock error!\n");
+        puts("lock error!\n");
     }
 }
 
@@ -54,6 +54,7 @@ int getWordCount(const char* file_path) {
     */
 
     if((fp = fopen(file_path,"rb")) == NULL){
+        printf("Thread exit");
         pthread_exit(NULL);
     }
     while(!feof(fp)){
@@ -61,12 +62,14 @@ int getWordCount(const char* file_path) {
         ch = fgetc(fp);
         if(isalpha(ch)){
             //if中的isalpha是判断是不是英文字母的库，头文件是ctype
-            my_lock;
+            if (pthread_mutex_lock(&mutex) != 0){
+                puts("lock error!\n");
+            }
             words[i] = ch;
             pthread_mutex_unlock(&mutex);
             i ++;
         }else{
-            my_lock;
+            my_lock();
             words[i] = '\0';
             for(j = 0;j <= k;j ++){
                 if(strcmp(a[j].w,words) == 0){
@@ -87,7 +90,7 @@ int getWordCount(const char* file_path) {
         }
     }
 
-    my_lock;
+    my_lock();
     for(int i = 0;i < k;i ++){
         printf("%s %d\n",a[i].w,a[i].count);
     }
@@ -99,14 +102,14 @@ int getWordCount(const char* file_path) {
 int checkFile(const char* name){
     printf("Current Thread is %lu\n",pthread_self());
     printf("now file is %s , while haveReadFile total %d: " ,name ,fileCount);
-    my_lock;
+    my_lock();
     for (int i = 0; i < fileCount; i++) {
         printf("%s\t",haveReadFile[i]);
     }
     pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
     printf("\n");
     int canRead = 1;
-    my_lock; // 给互斥体变量解除锁
+    my_lock(); // 给互斥体变量解除锁
     for(int i = 0;i < fileCount;i ++){
         if (!strcmp(name,haveReadFile[i])) {
             canRead = 0;
@@ -120,7 +123,7 @@ int checkFile(const char* name){
 }
 
 void setFile(char* name){
-    my_lock; // 给互斥体变量加锁
+    my_lock(); // 给互斥体变量加锁
 
     strcpy(haveReadFile[fileCount++],name);
 
@@ -131,7 +134,7 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
     DIR *dp;                      // 定义子目录流指针
     struct dirent *entry;         // 定义dirent结构指针保存后续目录
     struct stat statbuf;          // 定义statbuf结构保存文件属性
-    my_lock; // 给互斥体变量解除锁
+    my_lock(); // 给互斥体变量解除锁
     dp = opendir(dir);
     pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
     if(dp == NULL) {// 打开目录，获取子目录流指针，判断操作是否成功
