@@ -16,7 +16,7 @@
 
 #define Word_Max 100
 #define File_Max 50
-#define Thread_Count 10
+#define Thread_Count 2
 
 typedef struct {
     char w[Word_Max];
@@ -62,7 +62,9 @@ int getWordCount(const char* file_path) {
         ch = fgetc(fp);
         if(isalpha(ch)){
             //if中的isalpha是判断是不是英文字母的库，头文件是ctype
-            my_lock();
+            if (pthread_mutex_lock(&mutex) != 0){
+                puts("lock error!\n");
+            }
             words[i] = ch;
             pthread_mutex_unlock(&mutex);
             i ++;
@@ -147,7 +149,6 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
         sprintf(name,"%s/%s",dir,entry->d_name);
         lstat(name, &statbuf); // 获取下一级成员属性
 
-//        lstat(entry->d_name, &statbuf); // 获取下一级成员属性
         if(S_IFDIR &statbuf.st_mode) {// 判断下一级成员是否是目录
             if (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0)
                 continue;
@@ -158,7 +159,7 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
 //            printf("%*s%s\n", depth, "", entry->d_name);  // 输出属性不是目录的成员
             if (checkFile(name)){
                 setFile(name);
-                getWordCount(name);
+                getWordCount(entry->d_name);
                 printf("%s统计完毕\n",name);
             }
         }
