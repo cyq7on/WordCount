@@ -31,7 +31,11 @@ int fileCount = 0;
 
 pthread_mutex_t mutex ;
 
-
+/*
+ * 3. k是为了增加结构体的数量，每增加一个新的单词就加1.
+ * 4. flag是为了区别是否新读的单词在结构体里存在不存在，存在就count增1，不存在就纳入新的结构体并且count设置为1，
+ * 在循环结束后改为0
+*/
 int flag = 0,k = 0;
 
 void my_lock(){
@@ -48,9 +52,6 @@ int getWordCount(const char* file_path) {
     /*
     1. i是控制读文件的起点，每读到一个英文字符都进一位，若不是英文字母则将起点设为0，重新开始读，另外进入else部分。
     2. j是为了检验结构体是否含有刚读的单词设置的起点，作用是循环结构体。
-    3. k是为了增加结构体的数量，每增加一个新的单词就加1.
-    4. flag是为了区别是否新读的单词在结构体里存在不存在，存在就count增1，不存在就纳入新的结构体并且count设置为1，
-       千万别忘了在循环结束后改为0；
     */
 
     if((fp = fopen(file_path,"rb")) == NULL){
@@ -107,14 +108,14 @@ int checkFile(const char* name){
     pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
     printf("\n");*/
     int canRead = 1;
-    my_lock(); // 给互斥体变量解除锁
+    my_lock();
     for(int i = 0;i < fileCount;i ++){
         if (!strcmp(name,haveReadFile[i])) {
             canRead = 0;
             break;
         }
     }
-    pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
+    pthread_mutex_unlock(&mutex);
 
 //    printf("checkFile is %d\n",canRead);
     return canRead;
