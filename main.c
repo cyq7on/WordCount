@@ -35,7 +35,7 @@ pthread_mutex_t mutex ;
 int flag = 0,k = 0;
 
 void my_lock(){
-    if (my_lock != 0){
+    if (pthread_mutex_lock(&mutex) != 0){
         printf("lock error!\n");
     }
 }
