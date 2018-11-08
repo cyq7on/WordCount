@@ -98,14 +98,14 @@ int getWordCount(const char* file_path) {
 
 //检测文件是否未读，name是带有上级目录的文件名
 int checkFile(const char* name){
-    printf("Current Thread is %lu\n",pthread_self());
-    printf("now file is %s , while haveReadFile total %d: " ,name ,fileCount);
-    my_lock();
+//    printf("Current Thread is %lu\n",pthread_self());
+//    printf("now file is %s , while haveReadFile total %d: " ,name ,fileCount);
+    /*my_lock();
     for (int i = 0; i < fileCount; i++) {
         printf("%s\t",haveReadFile[i]);
     }
     pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
-    printf("\n");
+    printf("\n");*/
     int canRead = 1;
     my_lock(); // 给互斥体变量解除锁
     for(int i = 0;i < fileCount;i ++){
@@ -116,7 +116,7 @@ int checkFile(const char* name){
     }
     pthread_mutex_unlock(&mutex); // 给互斥体变量解除锁
 
-    printf("checkFile is %d\n",canRead);
+//    printf("checkFile is %d\n",canRead);
     return canRead;
 }
 
