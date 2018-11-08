@@ -46,8 +46,8 @@ int getWordCount(const char* file_path) {
     4. flag是为了区别是否新读的单词在结构体里存在不存在，存在就count增1，不存在就纳入新的结构体并且count设置为1，
        千万别忘了在循环结束后改为0；
     */
+
     if((fp = fopen(file_path,"rb")) == NULL){
-        printf("cannot open the file\n");
         pthread_exit(NULL);
     }
     while(!feof(fp)){
@@ -55,9 +55,12 @@ int getWordCount(const char* file_path) {
         ch = fgetc(fp);
         if(isalpha(ch)){
             //if中的isalpha是判断是不是英文字母的库，头文件是ctype
+            pthread_mutex_lock(&mutex);
             words[i] = ch;
+            pthread_mutex_unlock(&mutex);
             i ++;
         }else{
+            pthread_mutex_lock(&mutex);
             words[i] = '\0';
             for(j = 0;j <= k;j ++){
                 if(strcmp(a[j].w,words) == 0){
@@ -73,25 +76,29 @@ int getWordCount(const char* file_path) {
             }
             flag = 0;
             i = 0;
+            pthread_mutex_unlock(&mutex);
 
         }
     }
 
+//    pthread_mutex_lock(&mutex);
     for(int i = 0;i < k;i ++){
         printf("%s %d\n",a[i].w,a[i].count);
     }
+//    pthread_mutex_unlock(&mutex);
     return 0;
 }
 
 //检测文件是否未读，name是带有上级目录的文件名
 int checkFile(const char* name){
-//    printf("now file is %s , while haveReadFile total %d: " ,name ,fileCount);
-//    for (int i = 0; i < fileCount; i++) {
-//        printf("%s\t",haveReadFile[i]);
-//    }
-//    printf("\n");
+    printf("Current Thread is %lu\n",pthread_self());
+    printf("now file is %s , while haveReadFile total %d: " ,name ,fileCount);
+    pthread_mutex_lock(&mutex);
+    for (int i = 0; i < fileCount; i++) {
+        printf("%s\t",haveReadFile[i]);
+    }
+    printf("\n");
     int canRead = 1;
-    pthread_mutex_lock(&mutex); // 给互斥体变量加锁
 
     for(int i = 0;i < fileCount;i ++){
         if (!strcmp(name,haveReadFile[i])) {
@@ -117,8 +124,11 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
     DIR *dp;                      // 定义子目录流指针
     struct dirent *entry;         // 定义dirent结构指针保存后续目录
     struct stat statbuf;          // 定义statbuf结构保存文件属性
+
     if((dp = opendir(dir)) == NULL) {// 打开目录，获取子目录流指针，判断操作是否成功
-        puts("can't open dir.");
+        puts("can't open dir");
+        puts(dir);
+        printf("Current Thread is %lu\n",pthread_self());
         return;
     }
     chdir (dir);                     // 切换到当前目录
@@ -138,8 +148,6 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
                 setFile(name);
                 getWordCount(entry->d_name);
                 printf("%s统计完毕\n",name);
-            } else{
-                chdir("..");
             }
         }
 
@@ -161,16 +169,11 @@ int main(int argc, char *argv[]){
         return -1;
     }*/
 
-    char * st = "test";
-    char* str[]={"abcdd","FOO","911"};
-//    str[0]=st;
-//strcpy(str[0],st);
-    for (int j = 0; j < 3; ++j) {
-        printf("%s\n",str[j]);
-    }
+
     pthread_mutex_init(&mutex, NULL); //按缺省的属性初始化互斥体变量mutex
-    pthread_t pthread[Thread_Count] = {0,1};
-    for (int i = 0; i < Thread_Count - 1; i++) {
+    pthread_t pthread[Thread_Count] ;
+    for (int i = 0; i < Thread_Count; i++) {
+        pthread[i] = (unsigned long int)i;
         if (pthread_create(&pthread[i], NULL, thread, NULL)) {
             printf("pthread%d create fail\n",i);
         } else{
@@ -182,7 +185,7 @@ int main(int argc, char *argv[]){
         pthread_join(pthread[i],NULL);
     }
 
-
+    pthread_mutex_destroy(&mutex);
 //    scanDir("../prog",0);
 //    return 0;
 }
