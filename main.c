@@ -16,7 +16,7 @@
 
 #define Word_Max 100
 #define File_Max 50
-#define Thread_Count 2
+#define Thread_Count 3
 
 typedef struct {
     char w[Word_Max];
@@ -89,11 +89,12 @@ int getWordCount(const char* file_path) {
         }
     }
 
-    my_lock();
-    for(int i = 0;i < k;i ++){
+    /*my_lock();
+    for(i = 0;i < k;i ++){
         printf("%s %d\n",a[i].w,a[i].count);
     }
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);*/
+    printf("%s count by Thread-%lu\n",file_path,pthread_self());
     return 0;
 }
 
@@ -169,24 +170,21 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
 
 void *thread(void *arg) {
 //    int flag = 0,k = 0;
-    scanDir("../prog",0);
-    printf("Thread-%lu统计完毕\n",pthread_self());
+    scanDir((char*)arg,0);
+    printf("Thread-%lu count end\n",pthread_self());
 }
 
 int main(int argc, char *argv[]){
-    /*printf("%s\n",argv[1]);
-
     if (argc != 2){
         printf("no directory input\n");
         return -1;
-    }*/
-
+    }
 
     pthread_mutex_init(&mutex, NULL); //按缺省的属性初始化互斥体变量mutex
     pthread_t pthread[Thread_Count] ;
     for (int i = 0; i < Thread_Count; i++) {
         pthread[i] = (unsigned long int)i;
-        if (pthread_create(&pthread[i], NULL, thread, NULL)) {
+        if (pthread_create(&pthread[i], NULL, thread, argv[1])) {
             printf("pthread%d create fail\n",i);
         } else{
             printf("pthread%d create success\n",i);
@@ -198,6 +196,9 @@ int main(int argc, char *argv[]){
     }
 
     pthread_mutex_destroy(&mutex);
-//    scanDir("../prog",0);
-//    return 0;
+
+    printf("Main Thread sum up：\n");
+    for(int i = 0;i < k;i ++){
+        printf("%s %d\n",a[i].w,a[i].count);
+    }
 }
