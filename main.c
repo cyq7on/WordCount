@@ -16,7 +16,7 @@
 
 #define Word_Max 100
 #define File_Max 50
-#define Thread_Count 10
+#define Thread_Count 2
 
 typedef struct {
     char w[Word_Max];
@@ -142,9 +142,9 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
     }
 //    chdir (dir);                     // 切换到当前目录
     while((entry = readdir(dp)) != NULL) {// 获取下一级目录信息，如果未否则循环
-        char name[128];
-        sprintf(name,"%s/%s",dir,entry->d_name);
-        lstat(name, &statbuf); // 获取下一级成员属性
+        char fullname[128];
+        sprintf(fullname,"%s/%s",dir,entry->d_name);
+        lstat(fullname, &statbuf); // 获取下一级成员属性
 
 //        lstat(entry->d_name, &statbuf); // 获取下一级成员属性
         if(S_IFDIR &statbuf.st_mode) {// 判断下一级成员是否是目录
@@ -152,13 +152,13 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
                 continue;
 
 //            printf("%*s%s/\n", depth, "", entry->d_name);  // 输出目录名称
-            scanDir(name, depth + 4);              // 递归调用自身，扫描下一级目录的内容
+            scanDir(fullname, depth + 4);              // 递归调用自身，扫描下一级目录的内容
         } else{
 //            printf("%*s%s\n", depth, "", entry->d_name);  // 输出属性不是目录的成员
-            if (checkFile(name)){
-                setFile(name);
-                getWordCount(name);
-                printf("%s统计完毕\n",name);
+            if (checkFile(fullname)){
+                setFile(fullname);
+                getWordCount(fullname);
+//                printf("%s统计完毕\n",fullname);
             }
         }
 
@@ -170,6 +170,7 @@ void scanDir(char *dir, int depth) {// 定义目录扫描函数
 void *thread(void *arg) {
 //    int flag = 0,k = 0;
     scanDir("../prog",0);
+    printf("Thread-%lu统计完毕\n",pthread_self());
 }
 
 int main(int argc, char *argv[]){
