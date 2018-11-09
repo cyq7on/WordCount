@@ -32,8 +32,8 @@ int fileCount = 0;
 pthread_mutex_t mutex ;
 
 /*
- * 3. k是为了增加结构体的数量，每增加一个新的单词就加1.
- * 4. flag是为了区别是否新读的单词在结构体里存在不存在，存在就count增1，不存在就纳入新的结构体并且count设置为1，
+ * k是为了增加结构体的数量，每增加一个新的单词就加1.
+ * flag是为了区别是否新读的单词在结构体里存在不存在，存在就count增1，不存在就纳入新的结构体并且count设置为1，
  * 在循环结束后改为0
 */
 int flag = 0,k = 0;
@@ -48,11 +48,11 @@ int getWordCount(const char* file_path) {
     FILE *fp;
     char words[10];
     char ch;
-    int i = 0,j = 0;
     /*
     1. i是控制读文件的起点，每读到一个英文字符都进一位，若不是英文字母则将起点设为0，重新开始读，另外进入else部分。
     2. j是为了检验结构体是否含有刚读的单词设置的起点，作用是循环结构体。
     */
+    int i = 0,j = 0;
 
     if((fp = fopen(file_path,"rb")) == NULL){
         printf("Thread exit");
